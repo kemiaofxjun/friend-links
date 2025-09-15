@@ -20,20 +20,20 @@ const checkLinks = async (links) => {
   const aliveLinks = [];
   for (const link of links) {
     if (link.bypass) {
-      console.log(chalk.cyan(`[INFO] Bypassing ${link.url}...`));
+      console.log(chalk.cyan(`[INFO] Bypassing ${link.link}...`));
       aliveLinks.push(link);
       continue;
     }
     try {
-      console.log(chalk.cyan(`[INFO] Checking ${link.url}...`));
-      const response = await axios.get(link.url, {
+      console.log(chalk.cyan(`[INFO] Checking ${link.link}...`));
+      const response = await axios.get(link.link, {
         headers: {
           "User-Agent":
             "Mozilla/5.0 (compatible; BigCake's Blog Check Bot; +https://www.lihaoyu.cn)",
         },
       });
       if (response.status < 200 || response.status >= 300) {
-        console.log(chalk.yellowBright(`[WARN] Link ${link.url} is dead.`));
+        console.log(chalk.yellowBright(`[WARN] Link ${link.link} is dead.`));
         link.errormsg = chalk.yellowBright(
           `[WARN] Status code: ${response.status}`
         );
@@ -43,7 +43,7 @@ const checkLinks = async (links) => {
       }
     } catch (error) {
       console.log(
-        chalk.red(`[ERROR] Error checking ${link.url}: ${error.message}`)
+        chalk.red(`[ERROR] Error checking ${link.link}: ${error.message}`)
       );
       link.errormsg = error.message;
       deadLinks.push(link);
@@ -66,19 +66,19 @@ const checkDeadLinks = async () => {
 
     for (const link of deadLinks) {
       if (link.bypass) {
-        console.log(chalk.cyan(`[INFO] Bypassing ${link.url}...`));
+        console.log(chalk.cyan(`[INFO] Bypassing ${link.link}...`));
         aliveLinks.push(link);
         continue;
       }
       try {
-        const response = await axios.get(link.url, {
+        const response = await axios.get(link.link, {
           headers: {
             "User-Agent":
               "Mozilla/5.0 (compatible; BigCake's Blog Check Bot; +https://www.lihaoyu.cn)",
           },
         });
         if (response.status === 200) {
-          console.log(chalk.greenBright(`[INFO] Link ${link.url} is alive.`));
+          console.log(chalk.greenBright(`[INFO] Link ${link.link} is alive.`));
           delete link.errormsg; // 删除 errormsg 字段
           aliveLinks.push(link);
         }
@@ -142,7 +142,7 @@ const sendNotification = async (deadLinks) => {
     telegram: { apiRoot: process.env.BOT_API },
   });
   const message = `友链巡查已完成，以下友链因无法访问已被移除：\n${deadLinks
-    .map((link) => `${link.name}: ${link.url} - ${link.errormsg}`)
+    .map((link) => `${link.name}: ${link.link} - ${link.errormsg}`)
     .join("\n")}`;
   try {
     await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, message, {
